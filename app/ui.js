@@ -9,7 +9,7 @@
 import * as Log from '../core/util/logging.js';
 import _, { l10n } from './localization.js';
 import { isTouchDevice, isMac, isIOS, isAndroid, isChromeOS, isSafari,
-         hasScrollbarGutter, dragThreshold }
+         hasScrollbarGutter, dragThreshold, supportsKeyboardLock }
     from '../core/util/browser.js';
 import { setCapture, getPointerEvent } from '../core/util/events.js';
 import KeyTable from "../core/input/keysym.js";
@@ -1298,6 +1298,9 @@ const UI = {
             document.mozFullScreenElement || // currently working methods
             document.webkitFullscreenElement ||
             document.msFullscreenElement) {
+            if (supportsKeyboardLock) {
+                navigator.keyboard.unlock();
+            }
             if (document.exitFullscreen) {
                 document.exitFullscreen();
             } else if (document.mozCancelFullScreen) {
@@ -1316,6 +1319,12 @@ const UI = {
                 document.documentElement.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
             } else if (document.body.msRequestFullscreen) {
                 document.body.msRequestFullscreen();
+            }
+            // No need to explicitly ask for permission,
+            // but it's expected that user grant it since Chromium 131.
+            // See https://developer.chrome.com/blog/keyboard-lock-pointer-lock-permission
+            if (supportsKeyboardLock) {
+                navigator.keyboard.lock();
             }
         }
         UI.updateFullscreenButton();
